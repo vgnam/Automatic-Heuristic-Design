@@ -1,8 +1,9 @@
 import os
-from .original.eoh import EOH
+from .original.eoh_island import EOH_Island
 from .original.getParas import Paras
 from .original import prob_rank, pop_greedy
 from .problem_adapter import Problem
+from.original.eoh import EOH
 
 class EoH:
     def __init__(self, cfg, root_dir) -> None:
@@ -10,17 +11,19 @@ class EoH:
         self.root_dir = root_dir
         self.problem = Problem(cfg, root_dir)
 
-        self.paras = Paras() 
-        self.paras.set_paras(method = "eoh",
-                    # problem = "Not used", # Not used
-                    # llm_api_endpoint = "api.openai.com",
-                    llm_model = cfg.model,
-                    ec_pop_size = self.cfg.pop_size,
-                    ec_n_pop = (self.cfg.max_fe - 2 * self.cfg.pop_size) // (4 * self.cfg.pop_size) + 1,  # total evals = 2 * pop_size + n_pop * 4 * pop_size; for pop_size = 10, n_pop = 5, total evals = 2 * 10 + 4 * 5 * 10 = 220
-                    exp_output_path = "./",
-                    exp_debug_mode = False,
-                    eva_timeout=cfg.timeout)
-    
+        self.paras = Paras()
+        self.paras.set_paras(method="eoh",
+                             # problem = "Not used", # Not used
+                             # llm_api_endpoint = "api.openai.com",
+                             llm_model=cfg.model,
+                             ec_pop_size=self.cfg.pop_size,
+                             max_fe = cfg.max_fe,
+                             ec_n_pop=(self.cfg.max_fe - 2 * self.cfg.pop_size) // (4 * self.cfg.pop_size) + 1,
+                             # total evals = 2 * pop_size + n_pop * 4 * pop_size; for pop_size = 10, n_pop = 5, total evals = 2 * 10 + 4 * 5 * 10 = 220
+                             exp_output_path="./",
+                             exp_debug_mode=False,
+                             eva_timeout=cfg.timeout)
+
     def evolve(self):
         print("- Evolution Start -")
 
@@ -33,5 +36,3 @@ class EoH:
         print("-----------------------------------------")
 
         return results
-
-

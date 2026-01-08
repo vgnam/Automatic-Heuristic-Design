@@ -30,6 +30,9 @@ class InterfaceAPI:
 
             self.completion_tokens += len(encoding.encode(lst_completion[i]))
 
+    def get_completion_tokens(self):
+        return self.completion_tokens
+
     def get_response(self, prompt_content):
         pre_messages = {"system": "", "user": prompt_content}
         cfg = ConfigEoH(model=self.model_LLM)

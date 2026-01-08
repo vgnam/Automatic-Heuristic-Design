@@ -18,7 +18,7 @@ def generate_datasets():
         np.save(os.path.join(basepath, f'val{problem_size}_dataset.npy'), test_dataset)
         
     for problem_size in [20, 50, 100, 200, 500, 1000]:
-        n_instances = 64
+        n_instances = 1000
         test_dataset = np.random.rand(n_instances, problem_size, 2)
         np.save(os.path.join(basepath, f'test{problem_size}_dataset.npy'), test_dataset)
 

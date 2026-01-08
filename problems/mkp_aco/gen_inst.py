@@ -35,7 +35,7 @@ def generate_datasets(basepath = None):
     for mood, seed, problem_sizes in [
         ('train', 1234, (100,)),
         ('val',   3456, (100, 300, 500)),
-        ('test',  4567, (100, 200, 300, 500, 1000)),
+        ('test',  4567, (100, 200)),
     ]:
         np.random.seed(seed)
         batch_size = 5 if mood == 'train' or mood == 'val' else 64

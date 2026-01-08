@@ -96,4 +96,5 @@ if __name__ == '__main__':
             for i in range(n_instances):
                 obj = eval_heuristic(node_positions[i])
                 objs.append(obj)
+                # print(f"[*] Average for {problem_size}: {obj}")
             print(f"[*] Average for {problem_size}: {np.mean(objs)}")

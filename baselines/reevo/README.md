@@ -2,7 +2,7 @@
 
 🥳 **Welcome!** This is a codebase that accompanies the paper [*Large Language Models as Hyper-Heuristics for Combinatorial Optimization*](https://arxiv.org/abs/2402.01145).
 
-**Give ReEvo 5 minutes, and get a state-of-the-art algorithm in return!**
+**Give ReEvo_Island 5 minutes, and get a state-of-the-art algorithm in return!**
 
 ## Table of Contents
 
@@ -11,9 +11,9 @@
 * 3. [ Exciting Highlights 🌟](#ExcitingHighlights)
 * 4. [ Usage 🔑](#Usage)
 		* 4.1. [Dependency](#Dependency)
-		* 4.2. [To run ReEvo](#TorunReEvo)
+		* 4.2. [To run ReEvo_Island](#TorunReEvo)
 		* 4.3. [Available problems](#Availableproblems)
-		* 4.4. [Simple steps to apply ReEvo to your problem](#SimplestepstoapplyReEvotoyourproblem)
+		* 4.4. [Simple steps to apply ReEvo_Island to your problem](#SimplestepstoapplyReEvotoyourproblem)
 * 5. [ Citation 🤩](#Citation)
 * 6. [ Acknowledgments 🫡](#Acknowledgments)
 
@@ -22,16 +22,16 @@
 
 - **2024.05**: We release a new paper version.
 - **2024.04**: Novel use cases for Neural Combinatorial Optimization (NCO) and Electronic Design Automation (EDA).
-- **2024.02**: We are excited to release ReEvo! 🚀
+- **2024.02**: We are excited to release ReEvo_Island! 🚀
 
 
 ##  2. <a name='Introduction'></a> Introduction 🚀
 
-![Diagram of ReEvo](./assets/reevo.jpg)
+![Diagram of ReEvo_Island](./assets/reevo.jpg)
 
 We introduce **Language Hyper-Heuristics (LHHs)**, an emerging variant of Hyper-Heuristics (HHs) that leverages LLMs for heuristic generation, featuring **minimal manual intervention and open-ended heuristic spaces**.
 
-To empower LHHs, we present **Reflective Evolution (ReEvo)**, a generic searching framework that emulates the reflective design approach of human experts while much surpassing human capabilities with its scalable LLM inference, Internet-scale domain knowledge, and powerful evolutionary search.
+To empower LHHs, we present **Reflective Evolution (ReEvo_Island)**, a generic searching framework that emulates the reflective design approach of human experts while much surpassing human capabilities with its scalable LLM inference, Internet-scale domain knowledge, and powerful evolutionary search.
 
 
 ##  3. <a name='ExcitingHighlights'></a> Exciting Highlights 🌟
@@ -76,7 +76,7 @@ Problem-specific dependencies:
 - `tsp_gls`: numba==0.58
 
 
-####  4.2. <a name='TorunReEvo'></a>To run ReEvo
+####  4.2. <a name='TorunReEvo'></a>To run ReEvo_Island
 ```bash
 # e.g., for tsp_aco
 python main.py problem=tsp_aco
@@ -91,7 +91,7 @@ Check out `./cfg/` for more options.
 - Orienteering Problem (OP): `op_aco`, `op_aco_black_box`
 - Decap Placement Problem (DPP): `dpp_ga`
 
-####  4.4. <a name='SimplestepstoapplyReEvotoyourproblem'></a>Simple steps to apply ReEvo to your problem
+####  4.4. <a name='SimplestepstoapplyReEvotoyourproblem'></a>Simple steps to apply ReEvo_Island to your problem
 
 - Define your problem in `./cfg/problem/`.
 - Generate problem instances and implement the evaluation pipeline in `./problems/`.

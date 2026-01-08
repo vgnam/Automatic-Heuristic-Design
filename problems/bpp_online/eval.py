@@ -15,7 +15,7 @@ def get_valid_bin_indices(item: float, bins: np.ndarray) -> np.ndarray:
 
 
 def online_binpack(
-    items: tuple[float, ...], bins: np.ndarray
+        items: tuple[float, ...], bins: np.ndarray
 ) -> tuple[list[list[float, ...], ...], np.ndarray]:
     """Performs online binpacking of `items` into `bins`."""
     # Track which items are added to each bin.
@@ -62,7 +62,7 @@ def evaluate(instances: dict) -> float:
 
 
 def is_valid_packing(
-    packing: list[list[float, ...], ...], items: list[float], capacity: float
+        packing: list[list[float, ...], ...], items: list[float], capacity: float
 ) -> bool:
     """Returns whether `packing` is valid.
 
@@ -90,32 +90,33 @@ def is_valid_packing(
 
 if __name__ == "__main__":
     import os
+
     print("[*] Running ...")
 
     problem_size = int(sys.argv[1])
-    root_dir = sys.argv[2] # reserved for compatibility
+    root_dir = sys.argv[2]  # reserved for compatibility
     mood = sys.argv[3]
+    total = 0
+    number = 0
     assert mood in ['train', 'val']
-    assert problem_size in [5000, -1]
-    
-    file_name = f"weibull_5k_{mood}.pickle"
-    basepath = os.path.dirname(__file__)
-    dataset_path = os.path.join(basepath, "dataset", file_name)
-    
-    if not os.path.isfile(dataset_path):
-        from gen_inst import generate_datasets
-        generate_datasets()
-    
-    dataset = pickle.load(open(dataset_path, 'rb'))
-    
-    # Evaluate heuristic function on dataset
-    avg_num_bins = -evaluate(dataset)
-    l1_bound = dataset['l1_bound']
-    excess = (avg_num_bins - l1_bound) / l1_bound
-    print(file_name)
-    print(f'\t Average number of bins: {avg_num_bins}')
-    print(f'\t Lower bound on optimum: {l1_bound}')
-    print(f'\t Excess: {100 * excess:.2f}%')
-    
-    print("[*] Average:")
-    print(excess * 100)
+    for scale in ['1k', '5k']:
+        for i in [1, 2]:
+            number = number + 1
+            file_name = f"weibull_{scale}_{mood}{i}.pickle"
+            basepath = os.path.dirname(__file__)
+            dataset_path = os.path.join(basepath, "dataset", file_name)
+
+            if not os.path.isfile(dataset_path):
+                from gen_inst import generate_datasets
+
+                generate_datasets()
+
+            dataset = pickle.load(open(dataset_path, 'rb'))
+
+            # Evaluate heuristic function on dataset
+            avg_num_bins = -evaluate(dataset)
+            l1_bound = dataset['l1_bound']
+            excess = (avg_num_bins - l1_bound) / l1_bound
+            total = total + excess * 100
+        print("[*] Average:")
+        print(total / number)

@@ -1,7 +1,7 @@
 
 class GetPrompts():
     def __init__(self):
-        self.prompt_task = "Given a set of nodes with their coordinates, \
+        self.prompt_task = "You are an expert in combinatorial optimization. Given a set of nodes with their coordinates, \
 you need to find the shortest route that visits each node once and returns to the starting node. \
 The task can be solved step-by-step by starting from the current node and iteratively choosing the next node. \
 Help me design a novel algorithm that is different from the algorithms in literature to select the next node in each step."
@@ -10,6 +10,8 @@ Help me design a novel algorithm that is different from the algorithms in litera
         self.prompt_func_outputs = ["next_node"]
         self.prompt_inout_inf = "'current_node', 'destination_node', 'next_node', and 'unvisited_nodes' are node IDs. 'distance_matrix' is the distance matrix of nodes."
         self.prompt_other_inf = "All are Numpy arrays."
+        self.prompt_func_signature = "def select_next_node(current_node: int, destination_node: int, unvisited_nodes: set, distance_matrix: np.ndarray) -> int:"
+        self.prompt_func_desc = "The select_next_node function takes as input the current node, the destination_node, a set of unvisited nodes, and a distance matrix, and returns the next node to visit."
 
     def get_task(self):
         return self.prompt_task
@@ -28,6 +30,16 @@ Help me design a novel algorithm that is different from the algorithms in litera
 
     def get_other_inf(self):
         return self.prompt_other_inf
+
+    def get_func_signature(self):
+        return self.prompt_func_signature
+
+    def get_func_desc(self):
+        return self.prompt_func_desc
+
+    def get_knowledge(self):
+        return ""
+
 
 if __name__ == "__main__":
     getprompts = GetPrompts()

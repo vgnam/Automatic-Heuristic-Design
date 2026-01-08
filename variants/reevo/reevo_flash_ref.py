@@ -84,6 +84,10 @@ class ReEvoRF:
         self.print_flash_reflection_prompt = True
         self.print_comprehensive_reflection_prompt = True
 
+        self.ls1_prompt = file_to_string(f'{self.prompt_dir}/common/ls1.txt')
+        self.ls2_prompt = file_to_string(f'{self.prompt_dir}/common/ls2.txt')
+
+
     def cal_usage_LLM(self, lst_prompt, lst_completion, encoding_name="cl100k_base"):
         """Returns the number of tokens in a text string."""
         encoding = tiktoken.get_encoding(encoding_name)

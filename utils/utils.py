@@ -5,7 +5,40 @@ import concurrent.futures
 import time
 import re
 import inspect
+from population_encode import get_embedding, compute_cosine_similarity
+import numpy as np
 
+
+def compute_novelty_scores(population, k=3):
+    """
+    Compute novelty scores for each individual based on k-nearest neighbor distances.
+    """
+    if len(population) <= 1:
+        return [1.0] * len(population)  # Maximum novelty if only one or no individuals
+
+    # Get embeddings for all individuals
+    embeddings = [get_embedding(ind['code']) for ind in population]
+
+    # Compute pairwise cosine similarities
+    similarity_matrix = compute_cosine_similarity(embeddings)
+
+    novelty_scores = []
+    for i in range(len(population)):
+        # Get similarities to all other individuals (excluding self)
+        similarities = similarity_matrix[i]
+        # Convert similarities to distances (1 - similarity)
+        distances = [1 - sim for j, sim in enumerate(similarities) if i != j]
+        distances.sort()
+
+        # Average distance to k nearest neighbors
+        if len(distances) >= k:
+            knn_dist = np.mean(distances[:k])
+        else:
+            knn_dist = np.mean(distances) if distances else 0.0
+
+        novelty_scores.append(knn_dist)
+
+    return novelty_scores
 
 def file_to_string(filename):
     with open(filename, 'r') as file:
@@ -49,26 +82,7 @@ def extract_description(response: str) -> tuple[str, str]:
 
 
 def multi_chat_completion(messages_list: list[list[dict]], n, model, temperature):
-    """
-    An example of messages_list:
 
-    messages_list = [
-        [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Hello!"},
-        ],
-        [
-            {"role": "system", "content": "You are a knowledgeable guide."},
-            {"role": "user", "content": "How are you?"},
-        ],
-        [
-            {"role": "system", "content": "You are a witty comedian."},
-            {"role": "user", "content": "Tell me a joke."},
-        ]
-    ]
-    param: n: number of responses to generate for each message in messages_list
-    """
-    # If messages_list is not a list of list (i.e., only one conversation), convert it to a list of list
     assert isinstance(messages_list, list), "messages_list should be a list."
     try:
         if not isinstance(messages_list[0], list):
@@ -98,23 +112,58 @@ def multi_chat_completion(messages_list: list[list[dict]], n, model, temperature
     return contents
 
 
+# def chat_completion(n: int, messages: list[dict], model: str, temperature: float) -> list[dict]:
+#     """
+#     Generate n responses using OpenAI Chat Completions API
+#     """
+#
+#     for attempt in range(100):
+#         try:
+#             response_cur = completion(model=model,
+#                                       messages=messages,
+#                                       temperature=temperature,
+#                                       n=n)
+#                                       # api_base="http://localhost:1234/v1",
+#                                       # api_key="sk-no-key-required")
+#             break
+#         except Exception as e:
+#             logging.info(f"Attempt {attempt + 1} failed with error: {e}")
+#             time.sleep(3)
+#     if response_cur is None:
+#         logging.info("Code terminated due to too many failed attempts!")
+#         exit()
+#
+#     return response_cur.choices
+
 def chat_completion(n: int, messages: list[dict], model: str, temperature: float) -> list[dict]:
     """
     Generate n responses using OpenAI Chat Completions API
     """
+    def clean_text(text: str) -> str:
+        return text.encode("ascii", errors="replace").decode()
 
-    for attempt in range(30):
+    response_cur = None
+
+    for attempt in range(100):
         try:
-            response_cur = completion(model=model, messages=messages, temperature=temperature, n=n)
+            response_cur = completion(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                n=n
+            )
             break
         except Exception as e:
-            logging.info(f"Attempt {attempt + 1} failed with error: {e}")
+            err = clean_text(str(e))
+            logging.info(f"Attempt {attempt + 1} failed with error: {err}")
             time.sleep(3)
+
     if response_cur is None:
         logging.info("Code terminated due to too many failed attempts!")
         exit()
 
     return response_cur.choices
+
 
 
 def extract_code_from_generator(content):

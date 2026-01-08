@@ -34,7 +34,7 @@ In summary, our contributions are as follows:
 - **Two diversity measurement metrics**: The **Shannon–Wiener Diversity Index (SWDI)** and the **Cumulative Diversity Index (CDI)**, to evaluate the evolutionary progress of populations within the LLM-EPS framework.
 - **A novel framework, HSEvo**: That aims to balance between the diversity and objective performance to improve the optimization process (and your happiness levels).
 
-This repo (besides the **HSEvo**) also includes setups for other baselines: **EoH**, **FunSearch**, **ReEvo**.  
+This repo (besides the **HSEvo**) also includes setups for other baselines: **EoH**, **FunSearch**, **ReEvo_Island**.  
 
 These can solve various problems, such as:
 - **Traveling Salesman Problem (TSP)**
@@ -53,9 +53,9 @@ These can solve various problems, such as:
 ## HSEvo Framework 🏗
 ![HSEvo Framework Overview](assets/hsevo-pipeline.png)
 
-LLM-based Evolutionary Program Search (LLM-EPS) revolutionizes Automatic Heuristic Design (AHD) by combining Large Language Models (LLMs) with evolutionary computation. This approach enables the exploration of heuristic search spaces as functional programs, addressing the critical balance between exploration and exploitation in solving NP-hard combinatorial problems. Frameworks like FunSearch, EoH, and ReEvo have demonstrated the potential of LLM-EPS in diverse optimization tasks.
+LLM-based Evolutionary Program Search (LLM-EPS) revolutionizes Automatic Heuristic Design (AHD) by combining Large Language Models (LLMs) with evolutionary computation. This approach enables the exploration of heuristic search spaces as functional programs, addressing the critical balance between exploration and exploitation in solving NP-hard combinatorial problems. Frameworks like FunSearch, EoH, and ReEvo_Island have demonstrated the potential of LLM-EPS in diverse optimization tasks.
 
-HSEvo advances LLM-EPS by outperforming FunSearch, EoH, and ReEvo in benchmarks like Bin Packing Problem (BPP), Orienteering Problem (OP), and Traveling Salesman Problem (TSP). Its integration of diversity-driven harmony search and flash reflection achieves superior objective scores and high diversity indices. Notably, HSEvo excels in optimizing solver phases and constructing heuristics, delivering substantial improvements across all evaluated tasks.
+HSEvo advances LLM-EPS by outperforming FunSearch, EoH, and ReEvo_Island in benchmarks like Bin Packing Problem (BPP), Orienteering Problem (OP), and Traveling Salesman Problem (TSP). Its integration of diversity-driven harmony search and flash reflection achieves superior objective scores and high diversity indices. Notably, HSEvo excels in optimizing solver phases and constructing heuristics, delivering substantial improvements across all evaluated tasks.
 
 ---
 
@@ -192,7 +192,7 @@ If you find our work helpful, please give us a star ⭐ on GitHub and cite our p
 We stand on the shoulders of giants (and a few large language models). Our work is built upon the following projects:
 
 - [Towards Understanding the Effectiveness of Automatic Heuristic Design with Large Language Models](https://github.com/zhichao-lu/llm-eps)
-- [ReEvo](https://github.com/ai4co/reevo)  
+- [ReEvo_Island](https://github.com/ai4co/reevo)  
 - [EoH](https://github.com/FeiLiu36/EoH) 
 - [FunSearch](https://github.com/google-deepmind/funsearch)  
 - [Algorithm Evolution Using Large Language Model](https://arxiv.org/abs/2311.15249)  

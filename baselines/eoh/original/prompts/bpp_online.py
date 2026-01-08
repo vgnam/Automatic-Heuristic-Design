@@ -1,6 +1,6 @@
 class GetPrompts():
     def __init__(self):
-        self.prompt_task = "I need help designing a novel score function that scoring a set of bins to assign an item. \
+        self.prompt_task = "You are an expert in combinatorial optimization. I need help designing a novel score function that scoring a set of bins to assign an item. \
 In each step, the item will be assigned to the bin with the maximum score. If the rest capacity of a bin equals the maximum capacity, it will not be used. The final goal is to minimize the number of used bins."
         self.prompt_func_name = "score"
         self.prompt_func_inputs = ['item', 'bins']

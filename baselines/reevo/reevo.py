@@ -83,8 +83,8 @@ class ReEvo:
 
         _cur_file_ = os.path.dirname(__file__)
         _cur_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        # self._my_log_path = os.path.join(_cur_file_, 'all_logs', f'{self.cfg.problem.problem_name}_{_cur_timestamp}')
-        # os.makedirs(self._my_log_path, exist_ok=True)
+        self._my_log_path = os.path.join(_cur_file_, 'all_logs', f'{self.cfg.problem.problem_name}_{_cur_timestamp}')
+        os.makedirs(self._my_log_path, exist_ok=True)
     def cal_usage_LLM(self, lst_prompt, lst_completion, encoding_name="cl100k_base"):
         """Returns the number of tokens in a text string."""
         encoding = tiktoken.get_encoding(encoding_name)
@@ -268,6 +268,16 @@ class ReEvo:
                     population[response_id] = self.mark_invalid_individual(population[response_id], traceback_msg)
 
         # Log after all population is evaluated
+        for response_id in range(len(population)):
+            individual = population[response_id]
+            instances = []
+            lines = stdout_str.strip().split('\n')
+            for line in lines:
+                match = re.search(r'^\[\*\].*?(\d+\.?\d*)$', line.strip())
+                if match:
+                    instances.append(float(match.group(1)))
+
+            individual["instances"] = instances
         valid_objs = [ind["obj"] for ind in population if ind["exec_success"]]
         best_obj = min(valid_objs) if valid_objs else float("inf")
         logging.info(f"Eval={self.function_evals}, TokenIn={self.prompt_tokens}, TokenOut={self.completion_tokens}, MaxObj={best_obj}")
@@ -418,11 +428,11 @@ class ReEvo:
         self.cal_usage_LLM([messages], [self.long_term_reflection_str])
         # Write reflections to file
         file_name = f"problem_iter{self.iteration}_short_term_reflections.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w', encoding='utf-8') as file:
             file.writelines("\n".join(short_term_reflections) + '\n')
 
         file_name = f"problem_iter{self.iteration}_long_term_reflection.txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w', encoding='utf-8') as file:
             file.writelines(self.long_term_reflection_str + '\n')
 
     def crossover(self, short_term_reflection_tuple: tuple[list[list[dict]], list[str], list[str]]) -> list[dict]:
@@ -528,3 +538,19 @@ class ReEvo:
             self.update_iter()
 
         return self.best_code_overall, self.best_code_path_overall
+
+    def calculate_population_distances(self, population: list[dict]) -> np.ndarray:
+        """
+        Calculate distance matrix for all individuals in population based on their instances field.
+        """
+        pop_size = len(population)
+        distance_matrix = np.zeros((pop_size, pop_size))
+
+        # Calculate pairwise distances
+        for i in range(pop_size):
+            for j in range(i + 1, pop_size):
+                distance = np.sum(abs(population[i]['instances'], population[j]['instances']))
+                distance_matrix[i][j] = distance
+                distance_matrix[j][i] = distance  # Symmetric matrix
+
+        return distance_matrix
