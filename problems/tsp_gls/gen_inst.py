@@ -9,9 +9,9 @@ class TSPInstance:
         self.distmat = distance_matrix(positions, positions) + np.eye(self.n)*1e-5
     
 dataset_conf = {
-    'train': (200,),
-    'val':   (20, 50, 100, 200),
-    'test':  (20, 50, 100, 200, 500),
+    # 'train': (200,),
+    # 'val':   (20, 50, 100, 200),
+    'test':  (700, 1500),
 }
 
 def generate_dataset(filepath, n, batch_size=64):

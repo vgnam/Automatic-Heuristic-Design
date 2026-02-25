@@ -5,7 +5,7 @@ import re
 import json
 
 from baselines.eoh.gls_tsp_adapt.gls_tsp_eval import Sandbox
-from utils.utils import block_until_running, file_to_string, filter_traceback, compute_novelty_scores
+from utils.utils import block_until_running, file_to_string, filter_traceback
 
 
 class Prompts:

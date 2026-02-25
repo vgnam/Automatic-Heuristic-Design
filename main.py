@@ -13,8 +13,9 @@ logging.basicConfig(level=logging.INFO)
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
+os.environ["HYDRA_FULL_ERROR"] = "1"
 
-os.environ["MISTRAL_API_KEY"] = "4VeBMsi9mimW8iFO7Zp9wpXfk4XxKaFD"
+os.environ["MISTRAL_API_KEY"] = "kG8lsMi5PW0Y7alZkY0TBVJlvnjm2jM9"
 os.environ["GEMINI_API_KEY"] = "AIzaSyD6BKmewlxhOqdBIerixihw0DJ3iYDIj9g"
 
 @hydra.main(version_base=None, config_path="cfg", config_name="config")
@@ -29,6 +30,7 @@ def main(cfg):
 
     if cfg.algorithm == "hsevo":
         from hsevo import HSEvo as LHH
+
     elif cfg.algorithm == "reevo":
         from baselines.reevo import ReEvo as LHH
     elif cfg.algorithm == "reevo-island":

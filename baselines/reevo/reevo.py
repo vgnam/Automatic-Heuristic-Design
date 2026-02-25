@@ -55,6 +55,36 @@ class ReEvo:
         else:
             self.external_knowledge = ""
 
+        match = re.match(r'^def +(.+?)\((.*)\) *-> *(.*?) *:', self.func_signature)
+        assert match is not None
+        self.prompt_func_name = match.group(1)
+        self.prompt_func_inputs = [txt.split(":")[0].strip() for txt in match.group(2).split(",")]
+
+        if self.prompt_func_name.startswith('select_next_node'):
+            self.prompt_func_outputs = ['next_node']
+        elif self.prompt_func_name.startswith('priority'):
+            self.prompt_func_outputs = ['priority']
+        elif self.prompt_func_name.startswith('heuristics'):
+            self.prompt_func_outputs = ['heuristics_matrix']
+        elif self.prompt_func_name.startswith('crossover'):
+            self.prompt_func_outputs = ['offsprings']
+        elif self.prompt_func_name.startswith('utility'):
+            self.prompt_func_outputs = ['utility_value']
+        else:
+            self.prompt_func_outputs = ['result']
+
+        if len(self.prompt_func_inputs) > 1:
+            self.joined_inputs = ", ".join("'" + s + "'" for s in self.prompt_func_inputs)
+        else:
+            self.joined_inputs = "'" + self.prompt_func_inputs[0] + "'"
+
+        if len(self.prompt_func_outputs) > 1:
+            self.joined_outputs = ", ".join("'" + s + "'" for s in self.prompt_func_outputs)
+        else:
+            self.joined_outputs = "'" + self.prompt_func_outputs[0] + "'"
+
+        self.num_inputs = len(self.prompt_func_inputs)
+
         # Common prompts
         self.system_generator_prompt = file_to_string(f'{self.prompt_dir}/common/system_generator.txt')
         self.system_reflector_prompt = file_to_string(f'{self.prompt_dir}/common/system_reflector.txt')
@@ -85,6 +115,7 @@ class ReEvo:
         _cur_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         self._my_log_path = os.path.join(_cur_file_, 'all_logs', f'{self.cfg.problem.problem_name}_{_cur_timestamp}')
         os.makedirs(self._my_log_path, exist_ok=True)
+
     def cal_usage_LLM(self, lst_prompt, lst_completion, encoding_name="cl100k_base"):
         """Returns the number of tokens in a text string."""
         encoding = tiktoken.get_encoding(encoding_name)
@@ -172,116 +203,62 @@ class ReEvo:
         individual["traceback_msg"] = traceback_msg
         return individual
 
-    def evaluate_population(self, population: list[dict]) -> list[dict]:
+    def evaluate_population(self, population: list[dict]) -> list[float]:
         """
         Evaluate population by running code in parallel and computing objective values.
         """
-        if self.problem == 'tsp_gls':
-            sand_box = Sandbox()
-
-            inner_runs = []
-            # Run code to evaluate
-            for response_id in range(len(population)):
-                self.function_evals += 1
-                # Skip if response is invalid
-                if population[response_id]["code"] is None:
-                    population[response_id] = self.mark_invalid_individual(population[response_id], "Invalid response!")
-                    inner_runs.append(None)
-                    continue
-
-                logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
-
-                result, run_ok = sand_box.run(population[response_id]['code'])
-                print("Log seed:", result, run_ok)
-
-
-                with open(os.path.join(self._my_log_path, f'samples_{self.function_evals}.json'), 'w') as f:
-                    _score = result if run_ok else None
-                    content = {
-                        'function': population[response_id]['code'],
-                        'score': _score,
-                        'iter': self.iteration
-                    }
-                    json.dump(content, f)
-                    f.close()
-
-                individual = population[response_id]
-                if run_ok:
-                    individual["obj"] = result
-                    individual["exec_success"] = run_ok
-                else:
-                    population[response_id] = self.mark_invalid_individual(population[response_id], 'RZ: no message.')
-
-                logging.info(
-                    f"Iteration {self.iteration}, response_id {response_id}: Objective value: {individual['obj']}")
-            return population
-        else:
-            inner_runs = []
-            # Run code to evaluate
-            for response_id in range(len(population)):
-                self.function_evals += 1
-                # Skip if response is invalid
-                if population[response_id]["code"] is None:
-                    population[response_id] = self.mark_invalid_individual(population[response_id], "Invalid response!")
-                    inner_runs.append(None)
-                    continue
-
-                logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
-
-                try:
-                    process = self._run_code(population[response_id], response_id)
-                    inner_runs.append(process)
-                except Exception as e:  # If code execution fails
-                    logging.info(f"Error for response_id {response_id}: {e}")
-                    population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
-                    inner_runs.append(None)
-
-            # Update population with objective values
-            for response_id, inner_run in enumerate(inner_runs):
-                if inner_run is None:  # If code execution fails, skip
-                    continue
-                try:
-                    inner_run.communicate(timeout=self.cfg.timeout)  # Wait for code execution to finish
-                except subprocess.TimeoutExpired as e:
-                    logging.info(f"Error for response_id {response_id}: {e}")
-                    population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
-                    inner_run.kill()
-                    continue
-
-                individual = population[response_id]
-                stdout_filepath = individual["stdout_filepath"]
-                with open(stdout_filepath, 'r') as f:  # read the stdout file
-                    stdout_str = f.read()
-                traceback_msg = filter_traceback(stdout_str)
-
-                individual = population[response_id]
-                # Store objective value for each individual
-                if traceback_msg == '':  # If execution has no error
-                    try:
-                        individual["obj"] = float(stdout_str.split('\n')[-2]) if self.obj_type == "min" else -float(
-                            stdout_str.split('\n')[-2])
-                        individual["exec_success"] = True
-                    except:
-                        population[response_id] = self.mark_invalid_individual(population[response_id],
-                                                                               "Invalid std out / objective value!")
-                else:  # Otherwise, also provide execution traceback error feedback
-                    population[response_id] = self.mark_invalid_individual(population[response_id], traceback_msg)
-
-        # Log after all population is evaluated
+        inner_runs = []
+        # Run code to evaluate
         for response_id in range(len(population)):
+            self.function_evals += 1
+            # Skip if response is invalid
+            if population[response_id]["code"] is None:
+                population[response_id] = self.mark_invalid_individual(population[response_id], "Invalid response!")
+                inner_runs.append(None)
+                continue
+
+            logging.info(f"Iteration {self.iteration}: Running Code {response_id}")
+
+            try:
+                process = self._run_code(population[response_id], response_id)
+                inner_runs.append(process)
+            except Exception as e:  # If code execution fails
+                logging.info(f"Error for response_id {response_id}: {e}")
+                population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
+                inner_runs.append(None)
+
+        # Update population with objective values
+        for response_id, inner_run in enumerate(inner_runs):
+            if inner_run is None:  # If code execution fails, skip
+                continue
+            try:
+                inner_run.communicate(timeout=self.cfg.timeout)  # Wait for code execution to finish
+            except subprocess.TimeoutExpired as e:
+                logging.info(f"Error for response_id {response_id}: {e}")
+                population[response_id] = self.mark_invalid_individual(population[response_id], str(e))
+                inner_run.kill()
+                continue
+
             individual = population[response_id]
-            instances = []
-            lines = stdout_str.strip().split('\n')
-            for line in lines:
-                match = re.search(r'^\[\*\].*?(\d+\.?\d*)$', line.strip())
-                if match:
-                    instances.append(float(match.group(1)))
+            stdout_filepath = individual["stdout_filepath"]
+            with open(stdout_filepath, 'r') as f:  # read the stdout file
+                stdout_str = f.read()
+            traceback_msg = filter_traceback(stdout_str)
 
-            individual["instances"] = instances
-        valid_objs = [ind["obj"] for ind in population if ind["exec_success"]]
-        best_obj = min(valid_objs) if valid_objs else float("inf")
-        logging.info(f"Eval={self.function_evals}, TokenIn={self.prompt_tokens}, TokenOut={self.completion_tokens}, MaxObj={best_obj}")
+            individual = population[response_id]
+            # Store objective value for each individual
+            if traceback_msg == '':  # If execution has no error
+                try:
+                    individual["obj"] = float(stdout_str.split('\n')[-2]) if self.obj_type == "min" else -float(
+                        stdout_str.split('\n')[-2])
+                    individual["exec_success"] = True
+                except:
+                    population[response_id] = self.mark_invalid_individual(population[response_id],
+                                                                           "Invalid std out / objective value!")
+            else:  # Otherwise, also provide execution traceback error feedback
+                population[response_id] = self.mark_invalid_individual(population[response_id], traceback_msg)
 
+            logging.info(f"Iteration {self.iteration}, response_id {response_id}: Objective value: {individual['obj']}")
         return population
 
     def _run_code(self, individual: dict, response_id) -> subprocess.Popen:
@@ -382,6 +359,122 @@ class ReEvo:
             logging.info("Short-term Reflection Prompt: \nSystem Prompt: \n" + system + "\nUser Prompt: \n" + user)
             self.print_short_term_reflection_prompt = False
         return message, worse_code, better_code
+    
+    # --- New helper methods for EDCRR + refinement pipeline ---
+    def chat_complete_single(self, messages: list[dict]) -> str:
+        """Run a single multi-turn chat completion and return the first response string."""
+        responses = multi_chat_completion([messages], 1, self.cfg.model, self.cfg.temperature)
+        # record token usage
+        try:
+            self.cal_usage_LLM([messages], responses)
+        except Exception:
+            pass
+        return responses[0]
+
+    def get_prompt_template(self, filename: str) -> str:
+        """Load a prompt template from the primary prompt dir or fallback to workspace prompts/common."""
+        # primary path (as originally configured)
+        primary = os.path.join(self.prompt_dir, 'common', filename)
+        fallback = os.path.join(self.root_dir, 'prompts', 'common', filename)
+        for path in (primary, fallback):
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception:
+                continue
+        raise FileNotFoundError(f"Prompt template not found: {filename}\nChecked: {primary} and {fallback}")
+
+    def get_algorithm_from_code(self, code: str) -> str:
+        """Extract a short algorithm description from `code` using the algorithm prompt via multi-chat completion."""
+        try:
+            template = self.get_prompt_template('algorithm.txt')
+        except Exception as e:
+            logging.info(f"Failed to read algorithm prompt: {e}")
+            return ""
+
+        user = template.format(
+            problem_desc=self.problem_desc,
+            func_name=self.func_name,
+            func_desc=self.func_desc,
+            code=code
+        )
+        system = self.system_generator_prompt if hasattr(self, 'system_generator_prompt') else ""
+        pre_messages = {"system": system, "user": user}
+        messages = format_messages(self.cfg, pre_messages)
+        return self.chat_complete_single(messages)
+
+    def error_signal(self, indiv: dict) -> str:
+        template = self.get_prompt_template('ecdrr_error_signal.txt')
+        user = template.format(problem_desc=self.problem_desc, algorithm=indiv.get('algorithm',''), code=indiv.get('code',''))
+        system = self.system_reflector_prompt if hasattr(self, 'system_reflector_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
+
+    def counterfactual(self, indiv: dict, error_signal: str) -> str:
+        template = self.get_prompt_template('ecdrr_counterfactual.txt')
+        user = template.format(problem_desc=self.problem_desc, algorithm=indiv.get('algorithm',''), code=indiv.get('code',''), error_signal=error_signal)
+        system = self.system_reflector_prompt if hasattr(self, 'system_reflector_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
+
+    def role_conflict(self, indiv: dict, counterfactual: str) -> str:
+        template = self.get_prompt_template('ecdrr_role_conflict.txt')
+        user = template.format(problem_desc=self.problem_desc, algorithm=indiv.get('algorithm',''), code=indiv.get('code',''), counterfactual=counterfactual)
+        system = self.system_reflector_prompt if hasattr(self, 'system_reflector_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
+
+    def abstraction(self, role_conflict: str) -> str:
+        template = self.get_prompt_template('ecdrr_abstraction.txt')
+        user = template.format(problem_desc=self.problem_desc, role_conflict=role_conflict)
+        system = self.system_reflector_prompt if hasattr(self, 'system_reflector_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
+
+    def assumption_repair(self, abstraction: str) -> str:
+        template = self.get_prompt_template('ecdrr_assumption_repair.txt')
+        user = template.format(problem_desc=self.problem_desc, abstraction=abstraction)
+        system = self.system_reflector_prompt if hasattr(self, 'system_reflector_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
+
+    def final_advice(self, repaired_assumptions: str) -> str:
+        template = self.get_prompt_template('ecdrr_final_advice.txt')
+        user = template.format(problem_desc=self.problem_desc, repaired_assumptions=repaired_assumptions)
+        system = self.system_reflector_prompt if hasattr(self, 'system_reflector_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
+
+    def ecdrr(self, indiv: dict) -> str:
+        """Run Error-Driven Counterfactual Role Reflection (EDCRR) as a 5-step pipeline."""
+        error_signal_output = self.error_signal(indiv)
+        counterfactual_output = self.counterfactual(indiv, error_signal_output)
+        role_conflict_output = self.role_conflict(indiv, counterfactual_output)
+        abstraction_output = self.abstraction(role_conflict_output)
+        repaired_assumptions = self.assumption_repair(abstraction_output)
+        advice = self.final_advice(repaired_assumptions)
+        return advice
+
+    def refine_with_critic(self, indiv: dict, advice: str) -> str:
+        try:
+            template = self.get_prompt_template('ecdrr_refine_with_critic.txt')
+        except Exception as e:
+            logging.info(f"Failed to read refine prompt: {e}")
+            return ""
+
+        user = template.format(
+            problem_desc=self.problem_desc,
+            code=indiv.get('code',''),
+            advice=advice,
+            func_name=self.prompt_func_name,
+            num_inputs=self.num_inputs,
+            joined_inputs=self.joined_inputs,
+            func_desc=self.func_desc,
+            other_inf=""
+        )
+        system = self.system_generator_prompt if hasattr(self, 'system_generator_prompt') else ""
+        messages = format_messages(self.cfg, {"system": system, "user": user})
+        return self.chat_complete_single(messages)
 
     def short_term_reflection(self, population: list[dict]) -> tuple[list[list[dict]], list[str], list[str]]:
         """
@@ -528,6 +621,7 @@ class ReEvo:
             self.population = self.evaluate_population(crossed_population)
             # Update
             self.update_iter()
+            
             # Long-term reflection
             self.long_term_reflection([response for response in short_term_reflection_tuple[0]])
             # Mutate
@@ -537,20 +631,22 @@ class ReEvo:
             # Update
             self.update_iter()
 
+            # --- EDCRR + refine pipeline: analyze best individual and produce a refined individual ---
+            try:
+                valid_inds = [ind for ind in self.population if ind.get("exec_success")]
+                if len(valid_inds) > 0:
+                    best_ind = min(valid_inds, key=lambda ind: ind["obj"])
+                    best_code = best_ind.get("code", "")
+                    # extract algorithm description via multi-chat completion
+                    algorithm = self.get_algorithm_from_code(best_code)
+                    indiv_for_ecdrr = {"algorithm": algorithm, "code": best_code}
+                    advice = self.ecdrr(indiv_for_ecdrr)
+                    refined_response = self.refine_with_critic(indiv_for_ecdrr, advice)
+                    # convert the LLM response into an individual and evaluate it
+                    new_ind = self.response_to_individual(refined_response, response_id=9999)
+                    evaluated = self.evaluate_population([new_ind])
+                    self.population.extend(evaluated)
+            except Exception as e:
+                logging.info(f"EDCRR/refine pipeline failed: {e}")
+
         return self.best_code_overall, self.best_code_path_overall
-
-    def calculate_population_distances(self, population: list[dict]) -> np.ndarray:
-        """
-        Calculate distance matrix for all individuals in population based on their instances field.
-        """
-        pop_size = len(population)
-        distance_matrix = np.zeros((pop_size, pop_size))
-
-        # Calculate pairwise distances
-        for i in range(pop_size):
-            for j in range(i + 1, pop_size):
-                distance = np.sum(abs(population[i]['instances'], population[j]['instances']))
-                distance_matrix[i][j] = distance
-                distance_matrix[j][i] = distance  # Symmetric matrix
-
-        return distance_matrix

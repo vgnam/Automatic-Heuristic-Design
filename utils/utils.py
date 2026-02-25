@@ -5,40 +5,39 @@ import concurrent.futures
 import time
 import re
 import inspect
-from population_encode import get_embedding, compute_cosine_similarity
 import numpy as np
 
 
-def compute_novelty_scores(population, k=3):
-    """
-    Compute novelty scores for each individual based on k-nearest neighbor distances.
-    """
-    if len(population) <= 1:
-        return [1.0] * len(population)  # Maximum novelty if only one or no individuals
-
-    # Get embeddings for all individuals
-    embeddings = [get_embedding(ind['code']) for ind in population]
-
-    # Compute pairwise cosine similarities
-    similarity_matrix = compute_cosine_similarity(embeddings)
-
-    novelty_scores = []
-    for i in range(len(population)):
-        # Get similarities to all other individuals (excluding self)
-        similarities = similarity_matrix[i]
-        # Convert similarities to distances (1 - similarity)
-        distances = [1 - sim for j, sim in enumerate(similarities) if i != j]
-        distances.sort()
-
-        # Average distance to k nearest neighbors
-        if len(distances) >= k:
-            knn_dist = np.mean(distances[:k])
-        else:
-            knn_dist = np.mean(distances) if distances else 0.0
-
-        novelty_scores.append(knn_dist)
-
-    return novelty_scores
+# def compute_novelty_scores(population, k=3):
+#     """
+#     Compute novelty scores for each individual based on k-nearest neighbor distances.
+#     """
+#     if len(population) <= 1:
+#         return [1.0] * len(population)  # Maximum novelty if only one or no individuals
+#
+#     # Get embeddings for all individuals
+#     embeddings = [get_embedding(ind['code']) for ind in population]
+#
+#     # Compute pairwise cosine similarities
+#     similarity_matrix = compute_cosine_similarity(embeddings)
+#
+#     novelty_scores = []
+#     for i in range(len(population)):
+#         # Get similarities to all other individuals (excluding self)
+#         similarities = similarity_matrix[i]
+#         # Convert similarities to distances (1 - similarity)
+#         distances = [1 - sim for j, sim in enumerate(similarities) if i != j]
+#         distances.sort()
+#
+#         # Average distance to k nearest neighbors
+#         if len(distances) >= k:
+#             knn_dist = np.mean(distances[:k])
+#         else:
+#             knn_dist = np.mean(distances) if distances else 0.0
+#
+#         novelty_scores.append(knn_dist)
+#
+#     return novelty_scores
 
 def file_to_string(filename):
     with open(filename, 'r') as file:
@@ -163,6 +162,38 @@ def chat_completion(n: int, messages: list[dict], model: str, temperature: float
         exit()
 
     return response_cur.choices
+
+# def chat_completion(
+#     n: int,
+#     messages: list[dict],
+#     model: str = "openai/DeepSeek-V3.2-Speciale",
+#     temperature: float = 1.0,
+# ) -> list[dict]:
+#
+#     response_cur = None
+#
+#     for attempt in range(10):
+#         try:
+#             response_cur = completion(
+#                 model="openai/DeepSeek-R1",
+#                 messages=messages,
+#                 temperature=temperature,
+#                 n=n,
+#                 timeout=60,
+#                 api_key="sk-uDXg03MCrYREykzUKG0g2kHPZFjDmIvAShRkL1q0dCdohnxf",
+#                 api_base="https://mkp-api.fptcloud.com/v1",
+#                 stream=False,
+#             )
+#             break
+#
+#         except Exception as e:
+#             logging.warning(f"Attempt {attempt + 1} failed: {e}")
+#             time.sleep(3)
+#
+#     if response_cur is None:
+#         raise RuntimeError("Failed after 10 attempts")
+#
+#     return response_cur["choices"]
 
 
 

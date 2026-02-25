@@ -722,8 +722,8 @@ class Evolution():
 
 
         self.instances_dir = f'{prompts.root_dir}/problems/{prompts.problem}/dataset'
-        self.data_file = [f for f in os.listdir(self.instances_dir) if f.startswith("train")][0]
-        self.data = np.load(os.path.join(self.instances_dir, self.data_file), allow_pickle=True)
+        # self.data_file = [f for f in os.listdir(self.instances_dir) if f.startswith("train")][0]
+        # self.data = np.load(os.path.join(self.instances_dir, self.data_file), allow_pickle=True)
 
         if len(self.prompt_func_inputs) > 1:
             self.joined_inputs = ", ".join("'" + s + "'" for s in self.prompt_func_inputs)

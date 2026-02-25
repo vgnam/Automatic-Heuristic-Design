@@ -1,16 +1,16 @@
 defaults:
   - _self_
-  - problem: tsp_gls
+  - problem: cvrp_aco
   - override hydra/output: local
 
 hydra:
   job:
     chdir: True
 # The chosen algorithm
-algorithm: eoh
+algorithm: hsevo
 
 # LLM parameters
-model: mistral/codestral-latest # LLM model
+model: mistral/codestral-2508 # LLM model
 temperature: 1  # temperature for chat completion
 
 # Main GA loop parameters
@@ -18,7 +18,7 @@ max_fe: 500 # maximum number of function evaluations
 pop_size: 10 # population size for GA
 init_pop_size: 30 # initial population size for GA/each island
 mutation_rate: 0.5 # mutation rate for GA
-timeout: 30 # timeout for evaluation of a single heuristic
+timeout: 120 # timeout for evaluation of a single heuristic
 
 # Harmony search
 hm_size: 5

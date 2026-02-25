@@ -4,10 +4,24 @@ from gen_inst import TSPInstance, load_dataset, dataset_conf
 from gls import guided_local_search
 from tqdm import tqdm
 
-try:
-    from gpt import update_edge_distance_v2 as heuristics
-except:
-    from gpt import heuristics
+import gpt
+
+heuristics = None
+for name in [
+    "heuristics_v3",
+    "heuristics_v2",
+    "heuristics_v1",
+    "heuristics",   # fallback cuối
+]:
+    if hasattr(gpt, name):
+        heuristics = getattr(gpt, name)
+        break
+
+if heuristics is None:
+    raise ImportError(
+        "No valid heuristic found in gpt.py "
+        "(expected update_edge_distance_v1/v2/v3 or heuristics)"
+    )
 
 perturbation_moves = 30
 iter_limit = 1200
