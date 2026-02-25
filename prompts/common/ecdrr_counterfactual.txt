@@ -1,0 +1,25 @@
+{problem_desc}
+You are given an algorithm and its implementation.
+
+Algorithm description:
+{algorithm}
+
+Code:
+{code}
+
+Previously identified uncertainty signals:
+{error_signal}
+
+Now assume the algorithm's behavior is WRONG.
+
+Your goal is to imagine the *simplest possible situation* where this algorithm fails.
+The failure should come from assumptions breaking, not from extreme or unrealistic cases.
+
+Strict rules:
+- Do NOT defend the algorithm
+- Do NOT propose fixes
+- Do NOT modify the algorithm
+
+Describe ONE minimal failure case:
+- Scenario: (brief, concrete)
+- Why this breaks the algorithm: (conceptual reason)

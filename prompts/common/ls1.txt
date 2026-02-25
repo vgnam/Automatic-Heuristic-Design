@@ -1,0 +1,22 @@
+{user_generator}
+
+### Current Heuristic
+{func_signature_m1}
+{code_method1}
+
+### Analyze & experience
+{analyze}
+{exp}
+Local Search Task
+Improve the current heuristic using local search techniques:
+
+### Explore neighborhood by modifying key parameters:
+- Test small incremental changes to strategy components
+- Evaluate each neighbor solution on representative instances
+- Move to better neighbors until local optimum reached
+
+Your task is to write an improved function {func_name}_v2 that applies local search to optimize this single heuristic. Make systematic modifications to create better neighborhood solutions.
+
+Output the code within a Python code block: ```python ... ``` , include comments showing local search moves and docstring (<50 words) describing the search process.
+
+I'm going to tip $999K for the best locally improved heuristic! Think step by step about neighborhood structure.

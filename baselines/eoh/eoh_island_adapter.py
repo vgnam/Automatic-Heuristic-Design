@@ -1,0 +1,43 @@
+import os
+from .original.eoh_island import EOH_Island
+from .original.getParas import Paras
+from .original import prob_rank, pop_greedy
+from .problem_adapter import Problem
+from.original.eoh_island import EOH_Island
+
+
+class EoH_Island:
+    def __init__(self, cfg, root_dir) -> None:
+        self.cfg = cfg
+        self.root_dir = root_dir
+        self.problem = Problem(cfg, root_dir)
+
+        self.paras = Paras()
+        self.paras.set_paras(method="eoh",
+                             # problem = "Not used", # Not used
+                             # llm_api_endpoint = "api.openai.com",
+                             llm_model=cfg.model,
+                             ec_pop_size=self.cfg.pop_size,
+
+                             ec_n_pop=(self.cfg.max_fe - 2 * self.cfg.pop_size) // (4 * self.cfg.pop_size) + 1,
+                             # total evals = 2 * pop_size + n_pop * 4 * pop_size; for pop_size = 10, n_pop = 5, total evals = 2 * 10 + 4 * 5 * 10 = 220
+                             # Island parameters
+                             ec_n_island=self.cfg.n_island,
+                             ec_migration_interval=self.cfg.migration_interval,
+                             ec_migration_size=self.cfg.migration_size,
+                             exp_output_path="./",
+                             exp_debug_mode=False,
+                             eva_timeout=cfg.timeout)
+
+    def evolve(self):
+        print("- Evolution Start -")
+
+        method = EOH_Island(self.paras, self.problem, prob_rank, pop_greedy)
+        results = method.run()
+
+        print("> End of Evolution! ")
+        print("----------------------------------------- ")
+        print("---     EoH successfully finished !   ---")
+        print("-----------------------------------------")
+
+        return results

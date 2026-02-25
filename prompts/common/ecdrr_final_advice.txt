@@ -1,0 +1,20 @@
+{problem_desc}
+You are given revised assumptions that improve the robustness of an algorithm.
+
+Revised assumptions:
+{repaired_assumptions}
+
+Based ONLY on these assumptions, provide actionable guidance for improving the algorithm.
+
+Output in the following structured format:
+
+Improvement Direction: [short, concrete label]
+Rationale: [why adjusting the algorithm under these assumptions helps]
+Implementation Guidance:
+- ...
+- ...
+Expected Impact: [robustness / stability / generalization gain]
+
+Cautions / What to Avoid:
+- ...
+- ...

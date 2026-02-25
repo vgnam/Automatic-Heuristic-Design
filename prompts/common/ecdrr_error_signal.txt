@@ -1,0 +1,14 @@
+{problem_desc}
+You are given an algorithm and its implementation.
+
+Algorithm description:
+{algorithm}
+
+Code:
+{code}
+
+Your task is to identify and list any uncertainty signals, ambiguities, or potential sources of error in the algorithm or its implementation. Focus on aspects that could lead to incorrect, unstable, or suboptimal behavior. Be specific and concise.
+
+Output format:
+- ...
+- ...

@@ -1,0 +1,36 @@
+{problem_desc}
+You are given an algorithm and its implementation.
+
+Algorithm description:
+{algorithm}
+
+Code:
+{code}
+
+Identified failure scenario:
+{counterfactual}
+
+You will analyze this algorithm from three strictly separated roles.
+
+ROLE 1 — Defender:
+Argue why the original design choices are reasonable under the intended assumptions.
+Do NOT address the counterfactual directly.
+
+ROLE 2 — Attacker:
+Argue why the counterfactual exposes a fundamental weakness.
+Do NOT suggest solutions.
+
+ROLE 3 — Observer:
+Summarize the *core unresolved tension* between Defender and Attacker.
+Do NOT choose a winner.
+Do NOT propose fixes.
+
+Output:
+Defender:
+- ...
+
+Attacker:
+- ...
+
+Observer (conflicts only):
+- ...

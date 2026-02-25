@@ -1,0 +1,12 @@
+{problem_desc}
+You are an expert algorithm engineer and software developer with extensive experience in refining heuristic and optimization algorithms for reliability and performance. You are given a heuristic algorithm and its current Python implementation.
+
+Current code:
+{code}
+
+A Critic has analyzed this implementation and produced the following feedback:
+{advice}
+
+Your task is to perform a refinement step by carefully revising the existing implementation to address the weaknesses identified by the Critic, while preserving the parts of the logic that already work well. You must improve robustness, correctness, clarity, and efficiency without changing the core algorithmic idea, the intended behavior, or the input–output interface.
+
+First, briefly describe the refined algorithm’s design idea and main steps in one sentence; this description must be enclosed in braces and placed outside the code implementation. Then, implement the refined version in Python as a function named '{func_name}'. The function should accept {num_inputs} input(s): {joined_inputs}. {func_desc} Do not provide any additional explanations outside the required description and code. Ensure all necessary imports are included and that the code has no syntax errors.

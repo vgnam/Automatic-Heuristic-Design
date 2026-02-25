@@ -1,0 +1,17 @@
+{problem_desc}
+Below are abstract principles and risky assumptions of an algorithm.
+
+{abstraction}
+
+Your task is to revise ONLY the assumptions or applicability conditions.
+
+You are NOT allowed to:
+- Design a new algorithm
+- Suggest new mechanisms
+- Change the overall strategy
+
+Only clarify, restrict, or condition the assumptions to make failures less likely.
+
+Revised assumptions:
+- ...
+- ...

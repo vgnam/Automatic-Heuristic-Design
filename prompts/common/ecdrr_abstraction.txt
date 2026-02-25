@@ -1,0 +1,18 @@
+{problem_desc}
+Below is a multi-perspective analysis of an algorithm.
+
+Analysis:
+{role_conflict}
+
+Your task is to step back and reason at a higher level of abstraction.
+
+Ignore all implementation details.
+Think in terms of *strategy*, *assumptions*, and *trade-offs*.
+
+Output format:
+Core strategy (1–2 bullets):
+- ...
+
+Hidden or risky assumptions:
+- ...
+- ...
